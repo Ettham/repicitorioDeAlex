@@ -1,14 +1,14 @@
 import express from 'express'
 import mysql from 'mysql2/promise'
-
- const app = express();
-
  const pool = await mysql.createConnection({
     host : 'localhost',
     user: 'root',
     password: 'senai',
     database: 'api_node'
  });
+
+ const app = express();
+ app.use(express.json())
 
  app.get("/", (req, res) =>{
     res.send("ola mundo")
@@ -27,6 +27,52 @@ import mysql from 'mysql2/promise'
         'SELECT * FROM usuario WHERE id_usuario=?', id
     );
     res.send(results)
+ })
+
+ app.post("/usuarios" , async (req, res) =>{
+   try{
+      const {body} = req
+   const [results] = await pool.query(
+        'INSERT INTO  usuario (nome, idade) VALUES (?,?)', 
+        [body.nome,body.idade]
+
+    );
+    const [usuarioCriado] = await pool.query(
+      "select * FROM usuario WHERE id_usuario=?",
+      results.insertId
+    )
+    return res.status(201).json(usuarioCriado)
+   }catch(error){
+      console.log(error)
+
+   }
+ })
+
+ app.delete("/usuarios/:id", async(req, res) => {
+   try{
+      const {id} = req.params;
+      const [results] = await pool.query(
+         "DELETE FROM usuario WHERE id_usuario=?",
+         id
+      );
+      res.status(200).send("usuario deletado!", results)
+      }catch(error){
+         console.log(error)
+      }
+ })
+
+ app.put("/usuarios/:id", async(req, res) => {
+   try{
+      const {id} = req.params;
+      const {body} = req
+      const [results] = await pool.query(
+         "UPDATE usuario SET `nome` = ?,`idade` = ? WHERE id_usuario = ?; ",
+         [body.nome, body.idade, id]
+      )
+      res.status(200).send("Usuario atualizado", results)
+   }catch(error){
+      console.log(error)
+   }
  })
 
  app.listen(3000, () =>{
