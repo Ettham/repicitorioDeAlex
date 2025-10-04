@@ -48,6 +48,38 @@ import mysql from 'mysql2/promise'
    }
  })
 
+ app.post("/registrar" , async (req, res) => {
+   try{
+      const { body } = req;
+      const [results] = await pool.query(
+      'INSERT INTO  usuario (nome, idade, email, senha) VALUES (?,?,?,?)' ,
+      [body.nome ,body.idade, body.email, body.senha]
+    )
+       const [usuarioCriado] = await pool.query(
+      "select * FROM usuario WHERE id_usuario=?",
+      results.insertId
+    )
+    return res.status(201).json(usuarioCriado)
+   }catch(error){
+      console.log(error)
+
+   }
+ })
+
+ app.post("/login", async (req, res) =>{
+   try{
+      const { body } = req;
+          const [usuarioCriado] = await pool.query(
+      `SELECT * FROM USUARIOS WHERE email=? and senha=?` ,
+      [body.email, body.senha]
+    )
+    if(usuarioCriado.length !=0)
+      return res.status(200).json(usuarioCriado)
+   } catch(error){
+      console.log(error);
+   }
+ })
+
  app.delete("/usuarios/:id", async(req, res) => {
    try{
       const {id} = req.params;
@@ -68,7 +100,7 @@ import mysql from 'mysql2/promise'
       const [results] = await pool.query(
          "UPDATE usuario SET `nome` = ?,`idade` = ? WHERE id_usuario = ?; ",
          [body.nome, body.idade, id]
-      )
+      );
       res.status(200).send("Usuario atualizado", results)
    }catch(error){
       console.log(error)
