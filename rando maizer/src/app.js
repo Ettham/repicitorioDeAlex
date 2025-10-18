@@ -11,7 +11,7 @@ import mysql from 'mysql2/promise'
  app.use(express.json())
 
  app.get("/", (req, res) =>{
-    res.send("ola mundo")
+    res.send("ola mundoo")
  })
 
  app.get("/usuarios" , async (req, res)=>{
